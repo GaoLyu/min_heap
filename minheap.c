@@ -20,10 +20,15 @@
 
 ///!!!!!!!!!!!!!!!!!!what contents, does it include priority
 void swap(MinHeap* heap, int index1, int index2){
-  if(index1>=1 && index2>=1 && index1<=heap->size && index2<=heap->size){
+  if(index1>=ROOT_INDEX && index2>=ROOT_INDEX && index1<=heap->size && index2<=heap->size){
     HeapNode copy=heap->arr[index1];
+    int id1=heap->arr[index1].id;
+    int id2=heap->arr[index2].id;
+    int c=heap->indexMap[id1];
     heap->arr[index1]=heap->arr[index2];
     heap->arr[index2]=copy;
+    heap->indexMap[id1]=heap->indexMap[id2];
+    heap->indexMap[id2]=c;
   }
 }
 
@@ -56,13 +61,13 @@ void bubbleDown(MinHeap* heap){
   int minIdx;
   p=ROOT_INDEX;
   while(p<=heap->size){
-    l=2*p;
-    r=2*p+1;
+    l=leftIdx(heap,p);
+    r=rightIdx(heap,p);
     minIdx=p;
-    if(l<=heap->size && heap->arr[l].priority<heap->arr[p].priority){
+    if(l!=NOTHING && heap->arr[l].priority<heap->arr[p].priority){
       minIdx=l;
     }
-    if(r<=heap->size && heap->arr[r].priority<heap->arr[minIdx].priority){
+    if(r!=NOTHING && heap->arr[r].priority<heap->arr[minIdx].priority){
       minIdx=r;
     }
     if(minIdx!=p){
@@ -130,21 +135,12 @@ bool isValidIndex(MinHeap* heap, int maybeIdx){
  */
 void doubleCapacity(MinHeap* heap){
   heap->capacity=heap->capacity*2;
-  HeapNode* arr=malloc(heap->capacity*sizeof(HeapNode));
-  for(int i=ROOT_INDEX;i<=heap->size;i++){
-    arr[i]=heap->arr[i];
-  }
-  free(heap->arr);
-
-  int* indexMap=malloc(heap->capacity*sizeof(int));
-  for(int i=ROOT_INDEX;i<=heap->size;i++){
-    indexMap[i]=heap->indexMap[i];
-  }
+  HeapNode* arr=realloc((heap->capacity+1)*sizeof(HeapNode));
+  
+  int* indexMap=realloc((heap->capacity+1)*sizeof(int));
   for(int i=heap->size+1;i<=heap->capacity;i++){
-    indexMap[i]=-1;
+    indexMap[i]=NOTHING;
   }
-  free(heap->indexMap);
-
   heap->arr=arr;
   heap->indexMap=indexMap;
 }
@@ -172,21 +168,55 @@ HeapNode getMin(MinHeap* heap){
 /* Removes and returns the node with minimum priority in minheap 'heap'.
  * Precondition: heap is non-empty
  */
-HeapNode extractMin(MinHeap* heap);
+HeapNode extractMin(MinHeap* heap){
+  HeapNode min=getMin(heap);
+  int idlast=heap->arr[size].id;
+  int idmin=heap->arr[1].id;
+  heap->arr[1]=heap->arr[size];
+  heap->indexMap[idlast]=heap->indexMap[idmin];
+  heap->indexMap[idmin]=NOTHING;
+  heap->arr[size]=NULL;
+  heap->size--;
+  bubbleDown(heap);
+  return min;
+}
 
 /* Inserts a new node with priority 'priority' and value 'value' into minheap
  * 'heap'. If 'heap' is full, double the capacity of 'heap' before inserting
  * the new node.
  */
-void insert(MinHeap* heap, int priority, void* value);
+void insert(MinHeap* heap, int priority, void* value){
+  if(heap->size==heap->capacity){
+    doubleCapacity(heap);
+  }
+  heap->size++;
+  heap->arr[size].priority=priority;
+  heap->arr[size].value=value;
+  heap->arr[size].id=size;
+  bubbleUp(heap,size);
+}
 
 /* Sets priority of node with ID 'id' in minheap 'heap' to 'newPriority', if
  * such a node exists in 'heap' and its priority is larger than
  * 'newPriority', and returns True. Has no effect and returns False, otherwise.
  * Note: this function bubbles up the node until the heap property is restored.
  */
-bool decreasePriority(MinHeap* heap, int id, int newPriority);
-
+bool decreasePriority(MinHeap* heap, int id, int newPriority){
+  if(id>size){
+    return false;
+  }
+  int index=heap->indexMap[id];
+  if(heap->arr[index].priority<=newPriority){
+    return false;
+  }
+  else{
+    heap->arr[index].priority=newPriority;
+    bubbleUp(heap,index);
+    return true;
+  }
+  
+}
+  
 /* Returns a newly created empty minheap with initial capacity 'capacity'.
  * Precondition: capacity > 0
  */
@@ -194,10 +224,10 @@ MinHeap* newHeap(int capacity){
   MinHeap* new=malloc(sizeof(MinHeap));
   new->size=0;
   new->capacity=capacity;
-  new->arr=malloc(capacity*sizeof(HeapNode));
-  new->indexMap=malloc(capacity*sizeof(int));
+  new->arr=malloc((capacity+1)*sizeof(HeapNode));
+  new->indexMap=malloc((capacity+1)*sizeof(int));
   for(int i=0;i<=capacity;i++){
-    new->indexMap[i]=-1;
+    new->indexMap[i]=NOTHING;
   }
 }
 
