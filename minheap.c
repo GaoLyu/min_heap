@@ -230,6 +230,10 @@ MinHeap* newHeap(int capacity){
   MinHeap* new=malloc(sizeof(MinHeap));
   new->size=0;
   new->capacity=capacity;
+  // HeapNode arr[capacity+1];
+  // new->arr = arr;
+  // int indexMap[capacity+1];
+  // new->indexMap=indexMap;
   new->arr=malloc((capacity+1)*sizeof(HeapNode));
   new->indexMap=malloc((capacity+1)*sizeof(int));
   for(int i=0;i<=capacity;i++){
