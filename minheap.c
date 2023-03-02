@@ -32,6 +32,47 @@ void swap(MinHeap* heap, int index1, int index2){
   }
 }
 
+/* Returns the index of the left child of a node at index 'nodeIndex' in
+ * minheap 'heap', if such exists.  Returns NOTHING if there is no such left
+ * child.
+ */
+int leftIdx(MinHeap* heap, int nodeIndex){
+  int left=2*nodeIndex;
+  if(left<=heap->size){
+    return left;
+  }
+  else{
+    return NOTHING;
+  }
+}
+
+/* Returns the index of the right child of a node at index 'nodeIndex' in
+ * minheap 'heap', if such exists.  Returns NOTHING if there is no such right
+ * child.
+ */
+int rightIdx(MinHeap* heap, int nodeIndex){
+  int right=2*nodeIndex+1;
+  if(right<=heap->size){
+    return right;
+  }
+  else{
+    return NOTHING;
+  }
+}
+
+/* Returns the index of the parent of a node at index 'nodeIndex' in minheap
+ * 'heap', if such exists.  Returns NOTHING if there is no such parent.
+ */
+int parentIdx(MinHeap* heap, int nodeIndex){
+  int parent=nodeIndex/2;
+  if(parent>=1){
+    return parent;
+  }
+  else{
+    return NOTHING;
+  }
+}
+
 /* Bubbles up the element newly inserted into minheap 'heap' at index
  * 'nodeIndex', if 'nodeIndex' is a valid index for heap. Has no effect
  * otherwise.
@@ -80,46 +121,6 @@ void bubbleDown(MinHeap* heap){
   }
 }
 
-/* Returns the index of the left child of a node at index 'nodeIndex' in
- * minheap 'heap', if such exists.  Returns NOTHING if there is no such left
- * child.
- */
-int leftIdx(MinHeap* heap, int nodeIndex){
-  int left=2*nodeIndex;
-  if(left<=heap->size){
-    return left;
-  }
-  else{
-    return NOTHING;
-  }
-}
-
-/* Returns the index of the right child of a node at index 'nodeIndex' in
- * minheap 'heap', if such exists.  Returns NOTHING if there is no such right
- * child.
- */
-int rightIdx(MinHeap* heap, int nodeIndex){
-  int right=2*nodeIndex+1;
-  if(right<=heap->size){
-    return right;
-  }
-  else{
-    return NOTHING;
-  }
-}
-
-/* Returns the index of the parent of a node at index 'nodeIndex' in minheap
- * 'heap', if such exists.  Returns NOTHING if there is no such parent.
- */
-int parentIdx(MinHeap* heap, int nodeIndex){
-  int parent=nodeIndex/2;
-  if(parent>=1){
-    return parent;
-  }
-  else{
-    return NOTHING;
-  }
-}
 
 /* Returns True if 'maybeIdx' is a valid index in minheap 'heap', and 'heap'
  * stores an element at that index. Returns False otherwise.
@@ -135,14 +136,16 @@ bool isValidIndex(MinHeap* heap, int maybeIdx){
  */
 void doubleCapacity(MinHeap* heap){
   heap->capacity=heap->capacity*2;
-  HeapNode* arr=realloc((heap->capacity+1)*sizeof(HeapNode));
+  heap->arr=realloc(heap->arr,(heap->capacity+1)*sizeof(HeapNode));
+  printf("test1\n\n");
   
-  int* indexMap=realloc((heap->capacity+1)*sizeof(int));
+  heap->indexMap=realloc(heap->indexMap,(heap->capacity+1)*sizeof(int));
+  printf("test2\n\n");
   for(int i=heap->size+1;i<=heap->capacity;i++){
-    indexMap[i]=NOTHING;
+    heap->indexMap[i]=NOTHING;
+    printf("test3\n\n");
   }
-  heap->arr=arr;
-  heap->indexMap=indexMap;
+  
 }
 
 /* Returns priority of node at index 'nodeIndex' in minheap 'heap'.
@@ -170,12 +173,12 @@ HeapNode getMin(MinHeap* heap){
  */
 HeapNode extractMin(MinHeap* heap){
   HeapNode min=getMin(heap);
+  int size=heap->size;
   int idlast=heap->arr[size].id;
   int idmin=heap->arr[1].id;
   heap->arr[1]=heap->arr[size];
   heap->indexMap[idlast]=heap->indexMap[idmin];
   heap->indexMap[idmin]=NOTHING;
-  heap->arr[size]=NULL;
   heap->size--;
   bubbleDown(heap);
   return min;
@@ -190,9 +193,11 @@ void insert(MinHeap* heap, int priority, void* value){
     doubleCapacity(heap);
   }
   heap->size++;
+  int size=heap->size;
   heap->arr[size].priority=priority;
   heap->arr[size].value=value;
   heap->arr[size].id=size;
+  heap->indexMap[size]=size;
   bubbleUp(heap,size);
 }
 
@@ -202,10 +207,11 @@ void insert(MinHeap* heap, int priority, void* value){
  * Note: this function bubbles up the node until the heap property is restored.
  */
 bool decreasePriority(MinHeap* heap, int id, int newPriority){
-  if(id>size){
+  
+  int index=heap->indexMap[id];
+  if(!(isValidIndex(heap,index))){
     return false;
   }
-  int index=heap->indexMap[id];
   if(heap->arr[index].priority<=newPriority){
     return false;
   }
@@ -229,6 +235,7 @@ MinHeap* newHeap(int capacity){
   for(int i=0;i<=capacity;i++){
     new->indexMap[i]=NOTHING;
   }
+  return new;
 }
 
 /* Frees all memory allocated for minheap 'heap'.
