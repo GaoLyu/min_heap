@@ -207,7 +207,9 @@ void insert(MinHeap* heap, int priority, void* value){
  * Note: this function bubbles up the node until the heap property is restored.
  */
 bool decreasePriority(MinHeap* heap, int id, int newPriority){
-  
+  if(id>heap->capacity){
+    return false;
+  }
   int index=heap->indexMap[id];
   if(!(isValidIndex(heap,index))){
     return false;
