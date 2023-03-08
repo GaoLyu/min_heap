@@ -28,14 +28,14 @@ bool isValidIndex(MinHeap* heap, int maybeIdx) {
  */
 void swap(MinHeap* heap, int index1, int index2) {
   if (isValidIndex(heap, index1) && isValidIndex(heap, index2)) {
-    HeapNode copy = heap->arr[index1];
+    HeapNode copyNode = heap->arr[index1];
     int id1 = heap->arr[index1].id;
     int id2 = heap->arr[index2].id;
-    int copy = heap->indexMap[id1];
+    int copyIndex = heap->indexMap[id1];
     heap->arr[index1] = heap->arr[index2];
-    heap->arr[index2] = copy;
+    heap->arr[index2] = copyNode;
     heap->indexMap[id1] = heap->indexMap[id2];
-    heap->indexMap[id2] = copy;
+    heap->indexMap[id2] = copyIndex;
   }
 }
 
