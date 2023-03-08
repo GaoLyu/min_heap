@@ -31,11 +31,11 @@ void swap(MinHeap* heap, int index1, int index2) {
     HeapNode copy = heap->arr[index1];
     int id1 = heap->arr[index1].id;
     int id2 = heap->arr[index2].id;
-    int c = heap->indexMap[id1];
+    int copy = heap->indexMap[id1];
     heap->arr[index1] = heap->arr[index2];
     heap->arr[index2] = copy;
     heap->indexMap[id1] = heap->indexMap[id2];
-    heap->indexMap[id2] = c;
+    heap->indexMap[id2] = copy;
   }
 }
 
@@ -101,22 +101,22 @@ void bubbleDown(MinHeap* heap) {
   if (heap->size <= ROOT_INDEX) {
     return;
   }
-  int p, l, r;
+  int parent, left, right;
   int minIdx;
-  p = ROOT_INDEX;
-  while (p <= heap->size) {
-    l = leftIdx(heap, p);
-    r = rightIdx(heap, p);
-    minIdx = p;
-    if (l != NOTHING && heap->arr[l].priority < heap->arr[p].priority) {
-      minIdx = l;
+  parent = ROOT_INDEX;
+  while (parent <= heap->size) {
+    left = leftIdx(heap, parent);
+    right = rightIdx(heap, parent);
+    minIdx = parent;
+    if (left != NOTHING && heap->arr[left].priority < heap->arr[parent].priority) {
+      minIdx = left;
     }
-    if (r != NOTHING && heap->arr[r].priority < heap->arr[minIdx].priority) {
-      minIdx = r;
+    if (right != NOTHING && heap->arr[right].priority < heap->arr[minIdx].priority) {
+      minIdx = right;
     }
-    if (minIdx != p) {
-      swap(heap, p, minIdx);
-      p = minIdx;
+    if (minIdx != parent) {
+      swap(heap, parent, minIdx);
+      parent = minIdx;
     } else {
       break;
     }
